@@ -21,26 +21,25 @@
 </head>
 <body>
 
-    <!-- Контейнер для чистого плеера -->
     <div class="kinobox_player"></div>
 
-    <!-- Подключаем официальный скрипт Kinobox -->
     <script src="https://kinobox.net/kinobox.min.js"></script>
     <script>
-        // Получаем Kinopoisk ID из URL (например: ?id=61237)
         const urlParams = new URLSearchParams(window.location.search);
-        const filmId = urlParams.get('id') || '61237'; // 61237 — по умолчанию Железный человек
+        // Берём ID из параметров ?id= или по умолчанию ставь Железного Человека (Kinopoisk ID 61237)
+        const filmId = urlParams.get('id') || '61237';
 
-        // Инициализируем плеер
-        new Kinobox('.kinobox_player', {
-            search: { kinopoisk: filmId },
-            menu: {
-                enable: true,
-                default: 'Collaps',
-                mobile: true
-            }
-        }).init();
+        if (typeof Kinobox !== 'undefined') {
+            new Kinobox('.kinobox_player', {
+                search: { kinopoisk: filmId },
+                players: ['Collaps', 'Alloha', 'Videocdn', 'HDRezka'],
+                menu: { enable: true }
+            }).init();
+        } else {
+            // Если внешний скрипт заблокирован, открываем плеер напрямую в iframe
+            document.querySelector('.kinobox_player').innerHTML = 
+                `<iframe src="https://api.collaps.org/embed/movie/${filmId}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
+        }
     </script>
-
 </body>
 </html>
