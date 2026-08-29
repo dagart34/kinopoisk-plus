@@ -4,105 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузка плеера...</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
-            width: 100%; 
-            height: 100%; 
-            background: #0d0d0d; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #fff;
-        }
-
-        .player-wrapper { 
-            width: 100%; 
-            max-width: 1200px; 
-            aspect-ratio: 16 / 9; 
-            background: #141414; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #222;
-        }
-
-        iframe { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            display: block;
-        }
-
-        iframe.loaded {
-            opacity: 1;
-        }
-
-        /* Индикатор загрузки */
-        .loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #888;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #333;
-            border-top: 2px solid #e50914;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Заглушка, если ID не передан */
-        .empty-state {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .empty-state h1 {
-            font-size: 22px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            color: #aaa;
-            font-size: 15px;
-            max-width: 460px;
-            line-height: 1.5;
-        }
-
-        .empty-state .btn-badge {
-            display: inline-block;
-            background: #e50914;
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: 600;
-            margin: 0 4px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -113,8 +15,9 @@
         </div>
 
         <div id="empty-state" class="empty-state">
+            <img class="dash-icon" src="Dash.png" alt="">
             <h1>Фильм не выбран</h1>
-            <p>Чтобы начать просмотр, откройте нужный фильм на КиноПоиске и нажмите кнопку <span class="btn-badge">Смотреть</span> из расширения <strong>Кинопоиск+</strong>.</p>
+            <p>Чтобы начать просмотр, откройте нужный фильм на Кинопоиске и нажмите кнопку <span class="btn-badge">▶&nbsp;&nbsp;Смотреть в Кинопоиск+</span></p>
         </div>
 
         <iframe id="player" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
