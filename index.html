@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузка...</title>
+    <title>Загрузка плеера...</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
@@ -13,7 +13,7 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #fff;
         }
 
@@ -21,73 +21,164 @@
             width: 100%; 
             max-width: 1200px; 
             aspect-ratio: 16 / 9; 
-            background: #000; 
-            border-radius: 8px; 
+            background: #141414; 
+            border-radius: 12px; 
             overflow: hidden; 
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #222;
         }
 
         iframe { 
             width: 100%; 
             height: 100%; 
             border: none; 
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            display: block;
         }
 
+        iframe.loaded {
+            opacity: 1;
+        }
+
+        /* Индикатор загрузки */
         .loader {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #666;
+            color: #888;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #333;
+            border-top: 2px solid #e50914;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Заглушка, если ID не передан */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .empty-state h1 {
+            font-size: 22px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            color: #aaa;
+            font-size: 15px;
+            max-width: 460px;
+            line-height: 1.5;
+        }
+
+        .empty-state .btn-badge {
+            display: inline-block;
+            background: #e50914;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 0 4px;
         }
     </style>
 </head>
 <body>
 
     <div class="player-wrapper">
-        <div id="loader" class="loader">Загрузка видео...</div>
-        <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <span>Загрузка плеера...</span>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+            <h1>Фильм не выбран</h1>
+            <p>Чтобы начать просмотр, откройте нужный фильм на КиноПоиске и нажмите кнопку <span class="btn-badge">Смотреть</span> из расширения <strong>Кинопоиск+</strong>.</p>
+        </div>
+
+        <iframe id="player" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
     </div>
 
     <script>
+        const CONFIG = {
+            TOKEN: '45e20a5f584becf7a64dffb7174ddf',
+            API_URL: 'https://api.apbugall.org/',
+            PLAYER_URL: 'https://player.alloha.host/'
+        };
+
         function getKinopoiskId() {
-            const match = window.location.pathname.match(/(?:film|series)\/(\d+)/i);
+            const match = window.location.pathname.match(/\/(?:film|series)\/(\d+)/i);
             if (match && match[1]) return match[1];
             
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('id') || '263531';
+            return urlParams.get('id'); // Возвращает null, если ID нет
         }
 
-        const kpId = getKinopoiskId();
-        const token = '45e20a5f584becf7a64dffb7174ddf';
-        const iframe = document.getElementById('player');
-        const loader = document.getElementById('loader');
+        async function initPlayer() {
+            const kpId = getKinopoiskId();
+            const iframe = document.getElementById('player');
+            const loader = document.getElementById('loader');
+            const emptyState = document.getElementById('empty-state');
 
-        // Запрос к найденному API Alloha
-        fetch(`https://api.apbugall.org/?token=${token}&kp=${kpId}`)
-            .then(response => response.json())
-            .then(res => {
-                if (res && res.data) {
-                    // 1. Устанавливаем заголовок вкладки: Название (Год)
-                    if (res.data.name && res.data.year) {
-                        document.title = `${res.data.name} (${res.data.year})`;
-                    }
-
-                    // 2. Вставляем iframe из ответа API (или запасной URL плеера)
-                    iframe.src = res.data.iframe || `https://player.alloha.host/?token=${token}&kp=${kpId}`;
-                } else {
-                    iframe.src = `https://player.alloha.host/?token=${token}&kp=${kpId}`;
-                }
+            // Если ID нет — отменяем загрузку и показываем заглушку
+            if (!kpId) {
+                document.title = 'Кинопоиск+ — Выберите фильм';
                 loader.style.display = 'none';
-            })
-            .catch(err => {
-                console.error('Ошибка получения метаданных:', err);
-                // Запасной запуск при ошибке API
-                iframe.src = `https://player.alloha.host/?token=${token}&kp=${kpId}`;
+                iframe.style.display = 'none';
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            const fallbackUrl = `${CONFIG.PLAYER_URL}?token=${CONFIG.TOKEN}&kp=${kpId}`;
+
+            iframe.addEventListener('load', () => {
+                iframe.classList.add('loaded');
                 loader.style.display = 'none';
             });
+
+            try {
+                const response = await fetch(`${CONFIG.API_URL}?token=${CONFIG.TOKEN}&kp=${kpId}`);
+                if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+
+                const res = await response.json();
+
+                if (res?.data) {
+                    if (res.data.name) {
+                        const year = res.data.year ? ` (${res.data.year})` : '';
+                        document.title = `${res.data.name}${year} — Смотреть онлайн`;
+                    }
+                    iframe.src = res.data.iframe || fallbackUrl;
+                } else {
+                    iframe.src = fallbackUrl;
+                }
+            } catch (err) {
+                console.warn('Ошибка получения метаданных, запуск стандартного плеера:', err);
+                iframe.src = fallbackUrl;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initPlayer);
     </script>
 </body>
 </html>
