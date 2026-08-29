@@ -6,30 +6,6 @@
     <title>Загрузка плеера...</title>
     <link rel="icon" type="image/png" href="/Dash.png">
     <link rel="stylesheet" href="/styles.css">
-
-    <!-- Автономная блокировка рекламы -->
-    <script>
-      (function() {
-        const EMPTY_VAST = '<?xml version="1.0" encoding="UTF-8"?><VAST version="3.0"></VAST>';
-        const AD_TERMS = ['vast', 'vpaid', 'preroll', 'midroll', 'postroll', 'riobet', '1xbet', 'casino', 'betting', 'aniview'];
-        const isAd = (str) => typeof str === 'string' && AD_TERMS.some(t => str.toLowerCase().includes(t));
-
-        const origFetch = window.fetch;
-        window.fetch = async function (...args) {
-          const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
-          if (isAd(url)) {
-            return new Response(EMPTY_VAST, { status: 200, headers: { 'Content-Type': 'text/xml' } });
-          }
-          return origFetch.apply(this, args);
-        };
-
-        const origXHR = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-          if (isAd(url)) url = 'data:text/xml;charset=utf-8,' + encodeURIComponent(EMPTY_VAST);
-          return origXHR.call(this, method, url, ...rest);
-        };
-      })();
-    </script>
 </head>
 <body>
 
@@ -40,9 +16,9 @@
         </div>
 
         <div id="empty-state" class="empty-state">
-            <img class="dash-icon" src="/Dash.png" alt="Кинопоиск+">
-            <h1>Фильм не выбран</h1>
-            <p>Чтобы начать просмотр, откройте нужный фильм на Кинопоиске и нажмите кнопку <span class="btn-badge">▶&nbsp;&nbsp;Смотреть в Кинопоиск+</span></p>
+            <img class="dash-icon" src="/Dash.png" alt="">
+            <h1>Выберите фильм</h1>
+            <p>Чтобы начать просмотр, откройте нужный фильм на Кинопоиске и нажмите кнопку <span class="btn-badge">▶&nbsp;&nbsp;Смотреть через Кинопоиск+</span></p>
         </div>
 
         <iframe id="player" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
@@ -68,13 +44,13 @@
         }
 
         async function initPlayer() {
+            const kpId = getKinopoiskId();
             const iframe = document.getElementById('player');
             const loader = document.getElementById('loader');
             const emptyState = document.getElementById('empty-state');
-            const kpId = getKinopoiskId();
 
             if (!kpId) {
-                document.title = 'Кинопоиск+ — Выберите фильм';
+                document.title = 'Кинопоиск+';
                 loader.style.display = 'none';
                 iframe.style.display = 'none';
                 emptyState.style.display = 'flex';
@@ -93,6 +69,7 @@
                 if (!response.ok) throw new Error(`HTTP status ${response.status}`);
 
                 const res = await response.json();
+
                 if (res?.data) {
                     if (res.data.name) {
                         const year = res.data.year ? ` (${res.data.year})` : '';
