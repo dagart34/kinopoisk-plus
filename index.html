@@ -3,88 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Просмотр фильма</title>
+    <title>Онлайн плеер</title>
     <style>
-        * { box-sizing: border-box; }
-        html, body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
             width: 100%;
             height: 100%;
-            background-color: #0b0b0e;
-            color: #fff;
-            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #0d0d0d;
             display: flex;
-            flex-direction: column;
-        }
-        .header {
-            height: 48px;
-            background: #141419;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            gap: 12px;
-            border-bottom: 1px solid #222;
-        }
-        select {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            outline: none;
-        }
-        #player-frame {
-            flex: 1;
-            width: 100%;
-            height: calc(100vh - 48px);
-            border: none;
-        }
-        .error {
-            display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+        }
+
+        /* Контейнер плеера с соотношением сторон 16:9 */
+        .player-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .kinobox_player {
+            width: 100%;
             height: 100%;
-            color: #ff6600;
-            font-size: 18px;
-            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <span style="font-size: 14px; color: #aaa;">Источник:</span>
-        <select id="sourceSelect" onchange="changeSource()">
-            <option value="kinobox">Плеер 1 (Kinobox)</option>
-            <option value="alloha">Плеер 2 (Alloha)</option>
-            <option value="vidsrc">Плеер 3 (Резерв)</option>
-        </select>
+
+    <div class="player-wrapper">
+        <div class="kinobox_player"></div>
     </div>
 
-    <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen"></iframe>
-
+    <!-- Скрипт Kinobox (бесплатный плеер-агрегатор) -->
+    <script src="https://kinobox.tv/kinobox.min.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const kpId = urlParams.get('id') || urlParams.get('kp');
-        const iframe = document.getElementById('player-frame');
-
-        if (!kpId) {
-            document.body.innerHTML = '<div class="error">Ошибка: ID фильма не передан в URL (?id=263531)</div>';
-        } else {
-            const sources = {
-                kinobox: `https://kinobox.net/embed/kp/${kpId}`,
-                alloha: `https://api.alloha.tv/?kp=${kpId}`,
-                vidsrc: `https://vidsrc.me/embed/movie?kinopoisk=${kpId}`
-            };
-
-            function changeSource() {
-                const selected = document.getElementById('sourceSelect').value;
-                iframe.src = sources[selected];
+        // Извлечение Кинопоиск ID из URL адреса (например: site.com/film/435 или site.com/series/12345)
+        function getKinopoiskId() {
+            const path = window.location.pathname;
+            const match = path.match(/(?:film|series)\/(\d+)/i);
+            
+            if (match && match[1]) {
+                return match[1];
             }
 
-            changeSource();
+            // Запасной вариант: получение из параметра URL (например: site.com/?id=435)
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id') || '435'; // По умолчанию "1+1" (ID: 435), если ID не найден
         }
+
+        // Инициализация чистого плеера
+        const kpId = getKinopoiskId();
+
+        kbox('.kinobox_player', {
+            search: { kinopoisk: kpId },
+            menu: {
+                enable: true, // Включить меню выбора источника (Kodik, Alloha, Collaps и др.)
+                default: 'Kodik'
+            }
+        });
     </script>
 </body>
 </html>
