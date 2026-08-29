@@ -166,9 +166,6 @@ iframe.loaded {
     cursor: default;
 }
 
-
-
-
 .empty-state strong {
     color: var(--text);
     font-weight: 700;
