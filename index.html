@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Онлайн плеер</title>
+    <title>Загрузка...</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
@@ -11,11 +11,10 @@
             height: 100%; 
             background: #0d0d0d; 
             display: flex; 
-            flex-direction: column;
             justify-content: center; 
             align-items: center; 
             font-family: sans-serif;
-            padding: 10px;
+            color: #fff;
         }
 
         .player-wrapper { 
@@ -25,6 +24,7 @@
             background: #000; 
             border-radius: 8px; 
             overflow: hidden; 
+            position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
@@ -34,35 +34,21 @@
             border: none; 
         }
 
-        .controls {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 14px;
         }
-
-        button {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 8px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        button:hover { background: #333; }
-        button.active { background: #e50914; border-color: #e50914; }
     </style>
 </head>
 <body>
 
     <div class="player-wrapper">
-        <iframe id="video-player" allowfullscreen allow="autoplay; fullscreen"></iframe>
-    </div>
-
-    <div class="controls">
-        <button onclick="setSource('alloha')" id="btn-alloha" class="active">Сервер 1</button>
-        <button onclick="setSource('collaps')" id="btn-collaps">Сервер 2</button>
+        <div id="loader" class="loader">Загрузка видео...</div>
+        <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
     </div>
 
     <script>
@@ -75,21 +61,33 @@
         }
 
         const kpId = getKinopoiskId();
-        const iframe = document.getElementById('video-player');
+        const token = '45e20a5f584becf7a64dffb7174ddf';
+        const iframe = document.getElementById('player');
+        const loader = document.getElementById('loader');
 
-        const sources = {
-            alloha: `https://player.alloha.to/?kp=${kpId}`,
-            collaps: `https://v1.collaps-api.ws/embed/film/${kpId}`
-        };
+        // Запрос к найденному API Alloha
+        fetch(`https://api.apbugall.org/?token=${token}&kp=${kpId}`)
+            .then(response => response.json())
+            .then(res => {
+                if (res && res.data) {
+                    // 1. Устанавливаем заголовок вкладки: Название (Год)
+                    if (res.data.name && res.data.year) {
+                        document.title = `${res.data.name} (${res.data.year})`;
+                    }
 
-        function setSource(name) {
-            iframe.src = sources[name];
-            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${name}`).classList.add('active');
-        }
-
-        // Автостарт
-        setSource('alloha');
+                    // 2. Вставляем iframe из ответа API (или запасной URL плеера)
+                    iframe.src = res.data.iframe || `https://player.alloha.host/?token=${token}&kp=${kpId}`;
+                } else {
+                    iframe.src = `https://player.alloha.host/?token=${token}&kp=${kpId}`;
+                }
+                loader.style.display = 'none';
+            })
+            .catch(err => {
+                console.error('Ошибка получения метаданных:', err);
+                // Запасной запуск при ошибке API
+                iframe.src = `https://player.alloha.host/?token=${token}&kp=${kpId}`;
+                loader.style.display = 'none';
+            });
     </script>
 </body>
 </html>
