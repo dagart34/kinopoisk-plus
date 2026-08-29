@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clean Player</title>
+    <title>Просмотр фильма</title>
     <style>
         html, body {
             margin: 0;
@@ -12,10 +12,16 @@
             height: 100%;
             background-color: #000;
             overflow: hidden;
+            font-family: sans-serif;
         }
         .kinobox_player {
             width: 100%;
-            height: 100vh;
+            height: 100%;
+        }
+        .error-msg {
+            color: #fff;
+            text-align: center;
+            margin-top: 20%;
         }
     </style>
 </head>
@@ -23,22 +29,24 @@
 
     <div class="kinobox_player"></div>
 
-    <script src="https://kinobox.net/kinobox.min.js"></script>
+    <!-- Подключаем скрипт Kinobox -->
+    <script src="https://kinobox.tv/kinobox.min.js"></script>
     <script>
+        // Извлекаем ID из URL (например: site.com/?id=263531)
         const urlParams = new URLSearchParams(window.location.search);
-        // Берём ID из параметров ?id= или по умолчанию ставь Железного Человека (Kinopoisk ID 61237)
-        const filmId = urlParams.get('id') || '61237';
+        const kpId = urlParams.get('id');
 
-        if (typeof Kinobox !== 'undefined') {
+        if (kpId) {
+            // Инициализируем плеер
             new Kinobox('.kinobox_player', {
-                search: { kinopoisk: filmId },
-                players: ['Collaps', 'Alloha', 'Videocdn', 'HDRezka'],
-                menu: { enable: true }
+                search: { kinopoisk: kpId },
+                menu: {
+                    default: 'menuList', // Меню выбора плееров и озвучек
+                    mobile: 'menuList'
+                }
             }).init();
         } else {
-            // Если внешний скрипт заблокирован, открываем плеер напрямую в iframe
-            document.querySelector('.kinobox_player').innerHTML = 
-                `<iframe src="https://api.collaps.org/embed/movie/${filmId}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
+            document.body.innerHTML = '<h2 class="error-msg">Ошибка: Не указан ID фильма</h2>';
         }
     </script>
 </body>
