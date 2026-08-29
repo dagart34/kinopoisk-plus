@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Плеер</title>
+    <title>Онлайн плеер</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
@@ -11,41 +11,61 @@
             height: 100%; 
             background: #0d0d0d; 
             display: flex; 
+            flex-direction: column;
             justify-content: center; 
             align-items: center; 
+            font-family: sans-serif;
+            padding: 10px;
         }
 
-        .content { 
+        .player-wrapper { 
             width: 100%; 
             max-width: 1200px; 
             aspect-ratio: 16 / 9; 
-        }
-
-        .kinobox { 
-            width: 100%; 
-            height: 100%; 
             background: #000; 
             border-radius: 8px; 
             overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .kinobox iframe { 
+        iframe { 
             width: 100%; 
             height: 100%; 
             border: none; 
         }
+
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        button:hover { background: #333; }
+        button.active { background: #e50914; border-color: #e50914; }
     </style>
 </head>
 <body>
 
-    <div class="content">
-        <div class="kinobox">
-            <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen"></iframe>
-        </div>
+    <div class="player-wrapper">
+        <iframe id="video-player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <div class="controls">
+        <button onclick="setSource('alloha')" id="btn-alloha" class="active">Сервер 1</button>
+        <button onclick="setSource('collaps')" id="btn-collaps">Сервер 2</button>
     </div>
 
     <script>
-        // Получение ID из URL (/film/263531 или ?id=263531)
         function getKinopoiskId() {
             const match = window.location.pathname.match(/(?:film|series)\/(\d+)/i);
             if (match && match[1]) return match[1];
@@ -54,9 +74,22 @@
             return urlParams.get('id') || '263531';
         }
 
-        // Подстановка ID в донорский плеер fbphdplay.top
         const kpId = getKinopoiskId();
-        document.getElementById('player-frame').src = `https://fbphdplay.top/film/${kpId}`;
+        const iframe = document.getElementById('video-player');
+
+        const sources = {
+            alloha: `https://player.alloha.to/?kp=${kpId}`,
+            collaps: `https://v1.collaps-api.ws/embed/film/${kpId}`
+        };
+
+        function setSource(name) {
+            iframe.src = sources[name];
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${name}`).classList.add('active');
+        }
+
+        // Автостарт
+        setSource('alloha');
     </script>
 </body>
 </html>
