@@ -7,6 +7,13 @@
     <link rel="icon" type="image/png" href="/Dash.png">
     <link rel="stylesheet" href="/styles.css">
 
+    <style>
+      /* Перекрашиваем элементы iframe из синего в оранжевый */
+      #player {
+        filter: hue-rotate(175deg) saturate(1.4);
+      }
+    </style>
+
     <!-- Автономная блокировка рекламы -->
     <script>
       (function() {
@@ -81,8 +88,7 @@
                 return;
             }
 
-            // Передаем оранжевый цвет плееру через GET-параметры
-            const fallbackUrl = `${CONFIG.PLAYER_URL}?token=${CONFIG.TOKEN}&kp=${kpId}&color=ff6600&accent=ff6600`;
+            const fallbackUrl = `${CONFIG.PLAYER_URL}?token=${CONFIG.TOKEN}&kp=${kpId}`;
 
             iframe.addEventListener('load', () => {
                 iframe.classList.add('loaded');
@@ -94,15 +100,12 @@
                 if (!response.ok) throw new Error(`HTTP status ${response.status}`);
 
                 const res = await response.json();
-
                 if (res?.data) {
                     if (res.data.name) {
                         const year = res.data.year ? ` (${res.data.year})` : '';
                         document.title = `${res.data.name}${year} — Смотреть онлайн`;
                     }
-                    let playerSrc = res.data.iframe || fallbackUrl;
-                    playerSrc += (playerSrc.includes('?') ? '&' : '?') + 'color=ff6600&accent=ff6600';
-                    iframe.src = playerSrc;
+                    iframe.src = res.data.iframe || fallbackUrl;
                 } else {
                     iframe.src = fallbackUrl;
                 }
