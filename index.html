@@ -17,8 +17,8 @@
 
         <div id="empty-state" class="empty-state">
             <img class="dash-icon" src="/Dash.png" alt="">
-            <h1>Фильм не выбран</h1>
-            <p>Чтобы начать просмотр, откройте нужный фильм на Кинопоиске и нажмите кнопку <span class="btn-badge">▶&nbsp;&nbsp;Смотреть в Кинопоиск+</span></p>
+            <h1>Выберите фильм</h1>
+            <p>Чтобы начать просмотр, откройте нужный фильм на Кинопоиске и нажмите кнопку <span class="btn-badge">▶&nbsp;&nbsp;Смотреть через Кинопоиск+</span></p>
         </div>
 
         <iframe id="player" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
@@ -50,7 +50,7 @@
             const emptyState = document.getElementById('empty-state');
 
             if (!kpId) {
-                document.title = 'Кинопоиск+ — Выберите фильм';
+                document.title = 'Кинопоиск+';
                 loader.style.display = 'none';
                 iframe.style.display = 'none';
                 emptyState.style.display = 'flex';
