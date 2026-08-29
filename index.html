@@ -3,79 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Онлайн плеер</title>
+    <title>Плеер</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { 
             width: 100%; 
             height: 100%; 
-            background: #0a0a0a; 
-            color: #fff; 
+            background: #0d0d0d; 
             display: flex; 
-            flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            font-family: system-ui, -apple-system, sans-serif;
-            padding: 10px;
         }
 
-        .player-container { 
+        .content { 
             width: 100%; 
-            max-width: 1100px; 
+            max-width: 1200px; 
             aspect-ratio: 16 / 9; 
-            background: #000; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
-        iframe { 
+        .kinobox { 
+            width: 100%; 
+            height: 100%; 
+            background: #000; 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
+
+        .kinobox iframe { 
             width: 100%; 
             height: 100%; 
             border: none; 
-        }
-
-        .servers { 
-            margin-top: 12px; 
-            display: flex; 
-            gap: 8px; 
-            flex-wrap: wrap; 
-            justify-content: center;
-        }
-
-        .btn { 
-            background: #1f1f1f; 
-            border: 1px solid #333; 
-            color: #ccc; 
-            padding: 8px 16px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover { 
-            background: #333; 
-            color: #fff; 
-        }
-
-        .btn.active { 
-            background: #e50914; 
-            border-color: #e50914; 
-            color: #fff; 
-            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
-    <div class="player-container">
-        <iframe id="main-player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    <div class="content">
+        <div class="kinobox">
+            <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen"></iframe>
+        </div>
     </div>
 
-    <div class="servers" id="server-buttons"></div>
-
     <script>
+        // Получение ID из URL (/film/263531 или ?id=263531)
         function getKinopoiskId() {
             const match = window.location.pathname.match(/(?:film|series)\/(\d+)/i);
             if (match && match[1]) return match[1];
@@ -84,35 +54,9 @@
             return urlParams.get('id') || '263531';
         }
 
+        // Подстановка ID в донорский плеер fbphdplay.top
         const kpId = getKinopoiskId();
-
-        // Прямые эндпоинты видеобаз без внешних JS-библиотек
-        const providers = [
-            { name: 'Источник 1 (Collaps)', url: `https://api.collaps.org/embed/film/${kpId}` },
-            { name: 'Источник 2 (Alloha)', url: `https://api.alloha.tv/?kp=${kpId}` },
-            { name: 'Источник 3 (Voidboost)', url: `https://voidboost.net/embed/${kpId}` },
-            { name: 'Источник 4 (Kodik)', url: `https://kodik.cc/find-player?kinopoisk=${kpId}` }
-        ];
-
-        const iframe = document.getElementById('main-player');
-        const buttonsContainer = document.getElementById('server-buttons');
-
-        providers.forEach((prov, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn' + (index === 0 ? ' active' : '');
-            btn.innerText = prov.name;
-            
-            btn.onclick = () => {
-                document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                iframe.src = prov.url;
-            };
-            
-            buttonsContainer.appendChild(btn);
-        });
-
-        // Старт с первого источника
-        iframe.src = providers[0].url;
+        document.getElementById('player-frame').src = `https://fbphdplay.top/film/${kpId}`;
     </script>
 </body>
 </html>
