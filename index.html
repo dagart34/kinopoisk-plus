@@ -5,48 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Просмотр фильма</title>
     <style>
+        * { box-sizing: border-box; }
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            overflow: hidden;
-            font-family: sans-serif;
-        }
-        .kinobox_player {
-            width: 100%;
-            height: 100%;
-        }
-        .error-msg {
+            background-color: #0b0b0e;
             color: #fff;
-            text-align: center;
-            margin-top: 20%;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            height: 48px;
+            background: #141419;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            border-bottom: 1px solid #222;
+        }
+        select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            outline: none;
+        }
+        #player-frame {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 48px);
+            border: none;
+        }
+        .error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #ff6600;
+            font-size: 18px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <span style="font-size: 14px; color: #aaa;">Источник:</span>
+        <select id="sourceSelect" onchange="changeSource()">
+            <option value="kinobox">Плеер 1 (Kinobox)</option>
+            <option value="alloha">Плеер 2 (Alloha)</option>
+            <option value="vidsrc">Плеер 3 (Резерв)</option>
+        </select>
+    </div>
 
-    <div class="kinobox_player"></div>
+    <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen"></iframe>
 
-    <!-- Подключаем скрипт Kinobox -->
-    <script src="https://kinobox.tv/kinobox.min.js"></script>
     <script>
-        // Извлекаем ID из URL (например: site.com/?id=263531)
         const urlParams = new URLSearchParams(window.location.search);
-        const kpId = urlParams.get('id');
+        const kpId = urlParams.get('id') || urlParams.get('kp');
+        const iframe = document.getElementById('player-frame');
 
-        if (kpId) {
-            // Инициализируем плеер
-            new Kinobox('.kinobox_player', {
-                search: { kinopoisk: kpId },
-                menu: {
-                    default: 'menuList', // Меню выбора плееров и озвучек
-                    mobile: 'menuList'
-                }
-            }).init();
+        if (!kpId) {
+            document.body.innerHTML = '<div class="error">Ошибка: ID фильма не передан в URL (?id=263531)</div>';
         } else {
-            document.body.innerHTML = '<h2 class="error-msg">Ошибка: Не указан ID фильма</h2>';
+            const sources = {
+                kinobox: `https://kinobox.net/embed/kp/${kpId}`,
+                alloha: `https://api.alloha.tv/?kp=${kpId}`,
+                vidsrc: `https://vidsrc.me/embed/movie?kinopoisk=${kpId}`
+            };
+
+            function changeSource() {
+                const selected = document.getElementById('sourceSelect').value;
+                iframe.src = sources[selected];
+            }
+
+            changeSource();
         }
     </script>
 </body>
