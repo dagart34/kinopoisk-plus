@@ -5,37 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Онлайн плеер</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #0d0d0d;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: sans-serif;
-        }
-
-        /* Контейнер плеера с соотношением сторон 16:9 */
-        .player-wrapper {
-            width: 100%;
-            max-width: 1200px;
-            aspect-ratio: 16 / 9;
-            background-color: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .kinobox_player {
-            width: 100%;
-            height: 100%;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; background: #0d0d0d; display: flex; justify-content: center; align-items: center; }
+        .player-wrapper { width: 100%; max-width: 1200px; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; }
+        .kinobox_player { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
@@ -44,33 +17,21 @@
         <div class="kinobox_player"></div>
     </div>
 
-    <!-- Скрипт Kinobox (бесплатный плеер-агрегатор) -->
     <script src="https://kinobox.tv/kinobox.min.js"></script>
     <script>
-        // Извлечение Кинопоиск ID из URL адреса (например: site.com/film/435 или site.com/series/12345)
         function getKinopoiskId() {
             const path = window.location.pathname;
             const match = path.match(/(?:film|series)\/(\d+)/i);
+            if (match && match[1]) return match[1];
             
-            if (match && match[1]) {
-                return match[1];
-            }
-
-            // Запасной вариант: получение из параметра URL (например: site.com/?id=435)
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('id') || '435'; // По умолчанию "1+1" (ID: 435), если ID не найден
+            return urlParams.get('id') || '263531';
         }
 
-        // Инициализация чистого плеера
-        const kpId = getKinopoiskId();
-
-        kbox('.kinobox_player', {
-            search: { kinopoisk: kpId },
-            menu: {
-                enable: true, // Включить меню выбора источника (Kodik, Alloha, Collaps и др.)
-                default: 'Kodik'
-            }
-        });
+        // Корректный запуск Kinobox
+        new Kinobox('.kinobox_player', {
+            search: { kinopoisk: getKinopoiskId() }
+        }).init();
     </script>
 </body>
 </html>
