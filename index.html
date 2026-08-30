@@ -3,169 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузка...</title>
+    <title>Загрузка плеера...</title>
     <link rel="icon" type="image/png" href="/Dash.png">
     <link rel="stylesheet" href="/styles.css">
-    <style>
-        /* Базовые стили для управления слоями */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #121212;
-            font-family: inherit;
-        }
-
-        .player-wrapper {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Фрейм с Кинопоиском на заднем/основном плане */
-        #kinopoisk-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 1;
-        }
-
-        /* Плеер (скрыт до клика) */
-        #player {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 2;
-            display: none;
-            background: #000;
-        }
-
-        #player.active {
-            display: block;
-        }
-
-        /* Лоадер плеера */
-        #loader {
-            position: absolute;
-            z-index: 3;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            color: #fff;
-            gap: 15px;
-        }
-        #loader.active {
-            display: flex;
-        }
-
-        /* Кнопка поверх Кинопоиска */
-        #kp-plus-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            z-index: 999999;
-            background-color: #ff6600;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 16px 28px;
-            font-size: 17px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-            transition: background 0.2s, transform 0.2s;
-        }
-        #kp-plus-btn:hover {
-            background-color: #e55c00;
-            transform: scale(1.02);
-        }
-        #kp-plus-btn svg {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-        }
-
-        /* Кнопка возврата к Кинопоиску (появляется во время просмотра плеера) */
-        #back-to-kp-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000000;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: none;
-            backdrop-filter: blur(5px);
-            transition: background 0.2s;
-        }
-        #back-to-kp-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Состояние, если ID не найден */
-        .empty-state {
-            position: absolute;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #fff;
-            text-align: center;
-            padding: 20px;
-        }
-        .dash-icon { width: 80px; height: 80px; margin-bottom: 20px; }
-    </style>
 </head>
 <body>
 
     <div class="player-wrapper">
-        <!-- Оригинальный Кинопоиск во фрейме -->
-        <iframe id="kinopoisk-frame" allowfullscreen></iframe>
-
-        <!-- Лоадер -->
-        <div id="loader">
+        <div id="loader" class="loader">
             <div class="spinner"></div>
             <span>Загрузка плеера...</span>
         </div>
 
-        <!-- Сам плеер -->
-        <iframe id="player" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
-
-        <!-- Кнопка запуска плеера поверх Кинопоиска -->
-        <button id="kp-plus-btn" style="display: none;">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            <span>Смотреть через Кинопоиск+</span>
-        </button>
-
-        <!-- Кнопка возврата обратно на страницу Кинопоиска -->
-        <button id="back-to-kp-btn">← Вернуться к Кинопоиску</button>
-
-        <!-- Ошибка, если ID нет -->
-        <div id="empty-state" class="empty-state" style="display: none;">
+        <div id="empty-state" class="empty-state">
             <img class="dash-icon" src="/Dash.png" alt="">
             <h1>Выберите фильм</h1>
-            <p>Откройте расширение на Кинопоиске, чтобы начать просмотр.</p>
+            <p>Чтобы начать просмотр, откройте нужный фильм на Кинопоиске и нажмите кнопку <span class="btn-badge">▶&nbsp;&nbsp;Смотреть через Кинопоиск+</span></p>
         </div>
+
+        <iframe id="player" allowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe>
     </div>
+
+    <footer class="site-footer">
+        <a href="https://t.me/dagart34" target="_blank" rel="noopener noreferrer">by dag_art_34</a>
+    </footer>
 
     <script>
         const CONFIG = {
@@ -182,81 +43,49 @@
             return urlParams.get('id');
         }
 
-        async function initApp() {
+        async function initPlayer() {
             const kpId = getKinopoiskId();
-            const kpFrame = document.getElementById('kinopoisk-frame');
-            const player = document.getElementById('player');
+            const iframe = document.getElementById('player');
             const loader = document.getElementById('loader');
-            const btnWatch = document.getElementById('kp-plus-btn');
-            const btnBack = document.getElementById('back-to-kp-btn');
             const emptyState = document.getElementById('empty-state');
 
             if (!kpId) {
                 document.title = 'Кинопоиск+';
-                kpFrame.style.display = 'none';
+                loader.style.display = 'none';
+                iframe.style.display = 'none';
                 emptyState.style.display = 'flex';
                 return;
             }
 
-            // Загружаем оригинальный Кинопоиск в фоновый фрейм
-            kpFrame.src = `https://www.kinopoisk.ru/film/${kpId}/`;
-            document.title = `Кинопоиск+ (ID: ${kpId})`;
-
             const fallbackUrl = `${CONFIG.PLAYER_URL}?token=${CONFIG.TOKEN}&kp=${kpId}`;
-            let playerReadyUrl = fallbackUrl;
 
-            // Заранее запрашиваем ссылку на плеер в фоне
+            iframe.addEventListener('load', () => {
+                iframe.classList.add('loaded');
+                loader.style.display = 'none';
+            });
+
             try {
                 const response = await fetch(`${CONFIG.API_URL}?token=${CONFIG.TOKEN}&kp=${kpId}`);
-                if (response.ok) {
-                    const res = await response.json();
-                    if (res?.data) {
-                        if (res.data.name) {
-                            const year = res.data.year ? ` (${res.data.year})` : '';
-                            document.title = `${res.data.name}${year}`;
-                        }
-                        playerReadyUrl = res.data.iframe || fallbackUrl;
+                if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+
+                const res = await response.json();
+
+                if (res?.data) {
+                    if (res.data.name) {
+                        const year = res.data.year ? ` (${res.data.year})` : '';
+                        document.title = `${res.data.name}${year} — Смотреть онлайн`;
                     }
+                    iframe.src = res.data.iframe || fallbackUrl;
+                } else {
+                    iframe.src = fallbackUrl;
                 }
             } catch (err) {
-                console.warn('Ошибка получения метаданных, используется fallback:', err);
+                console.warn('Ошибка получения метаданных, запуск стандартного плеера:', err);
+                iframe.src = fallbackUrl;
             }
-
-            // Показываем нашу фирменную кнопку после загрузки
-            btnWatch.style.display = 'flex';
-
-            // Обработчик клика «Смотреть через Кинопоиск+»
-            btnWatch.onclick = () => {
-                loader.classList.add('active');
-                btnWatch.style.display = 'none';
-
-                if (!player.src) {
-                    player.src = playerReadyUrl;
-                }
-
-                player.onload = () => {
-                    loader.classList.remove('active');
-                    player.classList.add('active');
-                    btnBack.style.display = 'block';
-                };
-
-                // Страховка на случай если событие load уже сработало
-                setTimeout(() => {
-                    loader.classList.remove('active');
-                    player.classList.add('active');
-                    btnBack.style.display = 'block';
-                }, 1500);
-            };
-
-            // Обработчик возврата к Кинопоиску
-            btnBack.onclick = () => {
-                player.classList.remove('active');
-                btnBack.style.display = 'none';
-                btnWatch.style.display = 'flex';
-            };
         }
 
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', initPlayer);
     </script>
 </body>
 </html>
