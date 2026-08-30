@@ -4,6 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузка плеера...</title>
+    
+    <!-- Блокировщик рекламы для защиты на всех устройствах, включая iOS Safari -->
+    <script>
+        (function () {
+            'use strict';
+            const EMPTY_VAST = '<?xml version="1.0" encoding="UTF-8"?><VAST version="3.0"></VAST>';
+            const AD_REGEX = /adtag|vast|vpaid|preroll|midroll|postroll|riobet|1xbet|casino|betting|tutu/i;
+            const isAd = (url) => typeof url === 'string' && AD_REGEX.test(url);
+
+            try {
+                const origFetch = window.fetch;
+                window.fetch = async function (...args) {
+                    const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+                    if (isAd(url)) {
+                        return new Response(EMPTY_VAST, { status: 200, headers: { 'Content-Type': 'text/xml' } });
+                    }
+                    return origFetch.apply(this, args);
+                };
+
+                const origXHR = window.XMLHttpRequest.prototype.open;
+                window.XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+                    if (isAd(url)) {
+                        url = 'data:text/xml;charset=utf-8,' + encodeURIComponent(EMPTY_VAST);
+                    }
+                    return origXHR.call(this, method, url, ...rest);
+                };
+            } catch {}
+        })();
+    </script>
+
     <link rel="icon" type="image/png" href="/Dash.png">
     <link rel="stylesheet" href="/styles.css">
 </head>
